@@ -19,3 +19,9 @@ __pycache__/
 
 # Poetry (залиште lock-файл, якщо потрібно відтворення середовища)
 # poetry.lock
+
+# Flask environment variables
+.env
+
+# Alembic
+*.log
