@@ -1,0 +1,21 @@
+# Virtual environments
+.venv/
+__pycache__/
+*.pyc
+
+# Python-related
+*.log
+*.sqlite3
+.env
+
+# IDE-related
+.idea/
+.vscode/
+
+# Docker
+*.log
+*.tmp
+*.pid
+
+# Poetry (залиште lock-файл, якщо потрібно відтворення середовища)
+# poetry.lock

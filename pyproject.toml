@@ -1,0 +1,25 @@
+[tool.poetry]
+name = "test-task-for-chi"
+version = "0.1.0"
+description = ""
+authors = ["Dima <hovorovskiid@gmail.com>"]
+readme = "README.md"
+packages = [{include = "test_task_for_chi"}]
+
+[tool.poetry.dependencies]
+python = "^3.12"
+flask = "^3.1.0"
+flask-sqlalchemy = "^3.1.1"
+flask-migrate = "^4.0.7"
+psycopg2-binary = "^2.9.10"
+flasgger = "^0.9.7.1"
+
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.3"
+pytest-cov = "^6.0.0"
+black = "^24.10.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
