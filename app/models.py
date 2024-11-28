@@ -1,13 +1,6 @@
 from app import db
-import enum
 from sqlalchemy.orm import relationship
-from sqlalchemy import Column, String, Integer, Text, Enum, ForeignKey
-
-
-class UserRole(enum.Enum):
-    ADMIN = 'admin'
-    EDITOR = 'editor'
-    VIEWER = 'viewer'
+from sqlalchemy import Column, String, Integer, Text, CheckConstraint, ForeignKey
 
 
 class User(db.Model):
@@ -17,12 +10,21 @@ class User(db.Model):
     username = Column(String(80), nullable=False)
     email = Column(String(120), nullable=False, unique=True)
     password_hash = Column(String(128), nullable=False)
-    role = Column(Enum(UserRole), nullable=False, default=UserRole.VIEWER)
+    role = Column(
+        String(20),
+        nullable=False,
+        default="viewer",
+        server_default="viewer"
+    )
+
+    __table_args__ = (
+        CheckConstraint("role IN ('admin', 'editor', 'viewer')", name="check_user_role"),
+    )
 
     articles = relationship('Article', back_populates='author')
 
     def __repr__(self):
-        return f'<User {self.username} ({self.role.value})>'
+        return f'<User {self.username} ({self.role})>'
 
 
 class Article(db.Model):
