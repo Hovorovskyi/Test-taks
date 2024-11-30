@@ -1,5 +1,3 @@
-import json
-
 from app.models import Article, User, db
 from .auth import role_required
 from flask import Blueprint, jsonify, request
@@ -28,7 +26,7 @@ def create_article():
             return jsonify({'message': 'Title and content cannot be empty'}), 422
 
         current_user_id = get_jwt_identity()
-        user = User.query.get(current_user_id)
+        user = db.session.get(User, current_user_id)
         if not user:
             return jsonify({'message': 'User not found'}), 404
 
@@ -64,7 +62,7 @@ def get_articles():
 @jwt_required()
 @role_required(['admin', 'editor', 'viewer'])
 def get_one_article(id):
-    article = Article.query.get(id)
+    article = db.session.get(Article, id)
     if not article:
         jsonify({'message': 'Article not found'}), 404
 
@@ -90,11 +88,11 @@ def update_article(id):
     if not data:
         return jsonify({'message': 'No data provided'}), 400
 
-    article = Article.query.get(id)
+    article = db.session.get(Article, id)
     if not article:
         return jsonify({'message': 'Article not found'}), 404
 
-    if current_user_role != 'admin' or current_user_role != 'editor' and article.author_id != int(current_user_id):
+    if current_user_role not in ['admin', 'editor'] and article.author_id != int(current_user_id):
         return jsonify({'message': 'Access forbidden: you are not allowed to edit this article'}), 403
 
     if 'title' in data:
@@ -113,7 +111,7 @@ def delete_article(id):
     claims = get_jwt()
     current_user_role = claims.get("role")
 
-    article = Article.query.get(id)
+    article = db.session.get(Article, id)
     if not article:
         return jsonify({'message': 'Article not found'}), 404
 

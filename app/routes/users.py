@@ -20,10 +20,10 @@ def get_users():
 @jwt_required()
 @role_required(['admin'])
 def get_user(user_id):
-    user = User.query.get_or_404(user_id)
+    user = db.session.get(User, user_id)
     if not user:
         return jsonify({'message': 'User not found'}), 404
-    return jsonify({'id': user.id, 'username': user.username, 'email': user.email, 'role': user.role.value}), 200
+    return jsonify({'id': user.id, 'username': user.username, 'email': user.email, 'role': user.role}), 200
 
 
 @user_bp.route('/', methods=['POST'])
@@ -50,7 +50,7 @@ def create_user():
 @jwt_required()
 @role_required(['admin'])
 def update_user(user_id):
-    user = User.query.get_or_404(user_id)
+    user = db.session.get(User, user_id)
     data = request.get_json()
     if not user:
         return jsonify({'message': 'User not found'}), 404
@@ -73,7 +73,7 @@ def update_user(user_id):
 @jwt_required()
 @role_required(['admin'])
 def delete_user(user_id):
-    user = User.query.get_or_404(user_id)
+    user = db.session.get(User, user_id)
     if not user:
         return jsonify({'message': 'User not found'}), 404
 
