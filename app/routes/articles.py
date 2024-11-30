@@ -1,26 +1,38 @@
-from flask import Blueprint, jsonify, request
+import json
+
 from app.models import Article, User, db
+from .auth import role_required
+from flask import Blueprint, jsonify, request
+from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
 
 
 article_bp = Blueprint('articles', __name__)
 
 
 @article_bp.route('/', methods=['POST'])
+@jwt_required()
+@role_required(['editor', 'admin', 'viewer'])
 def create_article():
     try:
         data = request.get_json()
+        if not data or 'title' not in data or 'content' not in data:
+            return jsonify({'message': 'Missing required fields: title and content'}), 400
+
         title = data.get('title')
         content = data.get('content')
-        author_id = data.get('author_id')
 
-        if not title or not content or not author_id:
-            return jsonify({'message': 'Missing required fields'}), 400
+        if not isinstance(title, str) or not isinstance(content, str):
+            return jsonify({'message': 'Title and content must be strings'}), 422
 
-        author = User.query.get(author_id)
-        if not author:
-            return jsonify({'message': 'Author not found'}), 404
+        if not title.strip() or not content.strip():
+            return jsonify({'message': 'Title and content cannot be empty'}), 422
 
-        article = Article(title=title, content=content, author_id=author_id)
+        current_user_id = get_jwt_identity()
+        user = User.query.get(current_user_id)
+        if not user:
+            return jsonify({'message': 'User not found'}), 404
+
+        article = Article(title=title, content=content, author_id=current_user_id)
         db.session.add(article)
         db.session.commit()
 
@@ -31,6 +43,8 @@ def create_article():
 
 
 @article_bp.route('/', methods=['GET'])
+@jwt_required()
+@role_required(['admin', 'editor', 'viewer'])
 def get_articles():
     articles = Article.query.all()
     result = ([
@@ -47,6 +61,8 @@ def get_articles():
 
 
 @article_bp.route('/<int:id>', methods=['GET'])
+@jwt_required()
+@role_required(['admin', 'editor', 'viewer'])
 def get_one_article(id):
     article = Article.query.get(id)
     if not article:
@@ -63,11 +79,23 @@ def get_one_article(id):
 
 
 @article_bp.route('/<int:id>', methods=['PUT'])
+@jwt_required()
 def update_article(id):
+    current_user_id = get_jwt_identity()
+
+    claims = get_jwt()
+    current_user_role = claims.get("role")
+
     data = request.get_json()
+    if not data:
+        return jsonify({'message': 'No data provided'}), 400
+
     article = Article.query.get(id)
     if not article:
         return jsonify({'message': 'Article not found'}), 404
+
+    if current_user_role != 'admin' or current_user_role != 'editor' and article.author_id != int(current_user_id):
+        return jsonify({'message': 'Access forbidden: you are not allowed to edit this article'}), 403
 
     if 'title' in data:
         article.title = data['title']
@@ -79,11 +107,44 @@ def update_article(id):
 
 
 @article_bp.route('/<int:id>', methods=['DELETE'])
+@jwt_required()
 def delete_article(id):
+    current_user_id = get_jwt_identity()
+    claims = get_jwt()
+    current_user_role = claims.get("role")
+
     article = Article.query.get(id)
     if not article:
         return jsonify({'message': 'Article not found'}), 404
 
+    if current_user_role != 'admin' and article.author_id != int(current_user_id):
+        return jsonify({'message': 'Access forbidden: you are not allowed to delete this article'}), 403
+
     db.session.delete(article)
     db.session.commit()
     return jsonify({'message': 'Article deleted successfully'}), 200
+
+
+@article_bp.route('/search', methods=['GET'])
+@jwt_required()
+def search_articles():
+    query = request.args.get('q')
+    if not query:
+        return jsonify({'message': "Missing search parameter 'q'"}), 400
+
+    articles = Article.query.filter(
+        (Article.title.ilike(f"%{query}%")) |
+        (Article.content.ilike(f"%{query}%"))
+    ).all()
+
+    result = [
+        {
+            'id': article.id,
+            'title': article.title,
+            'content': article.content,
+            'author_id': article.author_id,
+            'author_username': article.author.username
+        }
+        for article in articles
+    ]
+    return jsonify(result), 200
