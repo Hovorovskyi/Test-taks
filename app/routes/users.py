@@ -1,6 +1,6 @@
 from app.models import User, db
 from flask import Blueprint, request, jsonify
-from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
+from flask_jwt_extended import jwt_required
 from .auth import role_required
 
 
@@ -101,4 +101,3 @@ def search_users():
         for user in users
     ]
     return jsonify(result), 200
-
