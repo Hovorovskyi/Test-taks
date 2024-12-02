@@ -80,7 +80,6 @@ def test_update_article_access_denied(client, create_user, create_article):
     assert response.json["message"] == "Access forbidden: you are not allowed to edit this article"
 
 
-
 def test_delete_article(client, create_user, create_article):
     user = create_user("admin", "admin@example.com", "password", role="admin")
     article = create_article("Sample Article", "Content", user.id)
