@@ -19,6 +19,10 @@ def register():
     username = data.get('username')
     email = data.get('email')
     password = data.get('password')
+    role = data.get('role', 'viewer')
+
+    if role not in ['admin', 'editor', 'viewer']:
+        return jsonify({'message': 'Invalid role'}), 400
 
     if not username or not email or not password:
         return jsonify({'message': 'Missing request fields'}), 400
@@ -30,7 +34,7 @@ def register():
         return jsonify({'message': 'Email already in use'}), 400
 
     try:
-        user = User(username=username, email=email)
+        user = User(username=username, email=email, role=role)
         user.set_password(password)
         db.session.add(user)
         db.session.commit()
