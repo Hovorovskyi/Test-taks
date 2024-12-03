@@ -70,3 +70,43 @@ This project is a **backend solution** for a test task, built with **Flask**, **
     ```
   docker-compose run app alembic revision --autogenerate -m "Migration message"
   ```
+---
+## 📩 Postman Collection
+
+We have prepared a [Postman Collection](https://www.postman.com/) with all the necessary requests for testing the API. This allows you to easily explore the functionality and test it in action.
+
+---
+
+### 1. Import the Collection
+
+1. Open [Postman](https://www.postman.com/).
+2. Go to `File > Import`.
+3. Select the collection file located in the `tests/` directory of your project:
+4. The collection will appear in your Postman workspace. You are ready to start testing!
+
+---
+
+### 2. Using Postman
+
+1. Expand the collection in Postman.
+2. Ensure your API is running (by default, it is accessible at `http://127.0.0.1:5050`).
+3. Use the pre-configured requests, such as:
+- **POST**: `Register` — Register a new user.
+- **POST**: `Login` — Authenticate and get tokens.
+- **GET**: `Get users` — Retrieve the list of users (admin only).
+- **POST**: `Create article` — Create a new article.
+- **GET**: `Get articles` — Retrieve a list of articles.
+
+Example for creation user 'admin':
+```
+{
+  "username": "admin_user",
+  "email": "admin@example.com",
+  "password": "securepassword",
+  "role": "admin"
+}
+```
+
+> **Note:** For requests that require authentication, add the obtained token in the `Authorization > Bearer Token` section.
+
+---
