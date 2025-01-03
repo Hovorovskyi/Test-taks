@@ -1,4 +1,4 @@
-# Test Task for Chi 🎯
+# Test Task 🎯
 
 This project is a **backend solution** for a test task, built with **Flask**, **SQLAlchemy**, and Docker. It includes CI/CD pipelines configured using **GitHub Actions**.
 
